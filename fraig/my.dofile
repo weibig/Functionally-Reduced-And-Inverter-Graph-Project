@@ -1,0 +1,7 @@
+cirr tests.fraig/sim06.aag -r
+cirsim -file tests.fraig/pattern.06
+cirp -fec
+cirg 6
+cirg 4
+cirg 8
+cirg 5

@@ -1,0 +1,18 @@
+cirr ../tests.fraig/sim04.aag
+cirp
+cirp -pi
+cirp -po
+cirp -n
+cirp -fl
+usage
+cirsweep
+usage
+ciropt
+usage
+cirstrash
+usage
+cirsim -file ../tests.fraig/pattern.04
+usage
+cirp -fec
+usage
+q -f

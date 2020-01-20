@@ -1,0 +1,70 @@
+fraig> cirr ../tests.fraig/sim04.aag
+
+fraig> cirp
+
+Circuit Statistics
+==================
+  PI           1
+  PO           1
+  AIG          0
+------------------
+  Total        2
+
+fraig> cirp -pi
+PIs of the circuit: 1
+
+fraig> cirp -po
+POs of the circuit: 2
+
+fraig> cirp -n
+
+[0] PI  1
+[1] PO  2 !1
+
+fraig> cirp -fl
+
+fraig> usage
+Period time used : 0 seconds
+Total time used  : 0 seconds
+Total memory used: 0.1328 M Bytes
+
+fraig> cirsweep
+
+fraig> usage
+Period time used : 0 seconds
+Total time used  : 0 seconds
+Total memory used: 0.1328 M Bytes
+
+fraig> ciropt
+
+fraig> usage
+Period time used : 0 seconds
+Total time used  : 0 seconds
+Total memory used: 0.1367 M Bytes
+
+fraig> cirstrash
+
+fraig> usage
+Period time used : 0 seconds
+Total time used  : 0 seconds
+Total memory used: 0.1406 M Bytes
+
+fraig> cirsim -file ../tests.fraig/pattern.04
+
+Error: Pattern(01) length(2) does not match the number of inputs(1) in a circuit!!
+0 patterns simulated.
+
+fraig> usage
+Period time used : 0 seconds
+Total time used  : 0 seconds
+Total memory used: 0.168 M Bytes
+
+fraig> cirp -fec
+
+fraig> usage
+Period time used : 0 seconds
+Total time used  : 0 seconds
+Total memory used: 0.1719 M Bytes
+
+fraig> q -f
+

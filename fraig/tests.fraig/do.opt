@@ -1,0 +1,38 @@
+cirr tests.fraig/strash05.aag
+cirp
+cirp -pi
+cirp -po
+cirp -n
+cirp -fl
+cirsw
+ciropt
+cirstrash
+cirp
+cirp -pi
+cirp -po
+cirg 3 -fanin 3
+cirp -n
+cirg 
+cirp -fl
+
+
+
+
+
+cirr tests.fraig/sim06.aag -r
+cirsim -file tests.fraig/pattern.06
+cirp -fec
+cirg 6
+cirg 4
+cirg 8
+cirg 5
+
+cirr ../tests.fraig/sim06.aag -r
+cirsim -file ../tests.fraig/pattern.06
+cirp -fec
+cirg 6
+cirg 4
+cirg 8
+cirg 5
+
+10000000000000000000000000000000000000000000000000000000000000000
