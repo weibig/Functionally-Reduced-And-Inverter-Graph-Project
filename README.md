@@ -1,4 +1,10 @@
 # Functionally-Reduced-And-Inverter-Graph-Project
+
+## Table of contents
+* [Design of Data Structure](#Design-of-Data-Structure)
+* [Algorithms of Each Parts](#Algorithms-of-Each-Parts)
+
+
 ## I. Design of Data Structure
 ### class CirMgr
 主要管理各種函式，包括這次所需要寫optimize, sweep, fraig 等
