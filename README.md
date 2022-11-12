@@ -6,11 +6,10 @@
 
 
 ## I. Design of Data Structure
-### class CirMgr
-主要管理各種函式，包括這次所需要寫optimize, sweep, fraig 等
-  
-  
-  ```
+### 1. class `CirMgr`
+> Used to manage functions, including `optimize()`, `sweep()`, `fraig()`, etc.
+
+```
    bool readCircuit(const string&);
 
    // Member functions about circuit optimization
@@ -26,20 +25,25 @@
    void printFEC() const;
    void fraig();
    
-   ```
-另外也新增一些function，功能區分大概為：
-#### i. DFS_helper [void genDFSList(), void addDFS(CirGate* root)]: 
-用來生成 ```private member vector<CirGate*> _dfsList```
-  genDFSList 依照 PO 順序，recusively call addDFS()，把 root 以下的點透過_fanin 連結，traverse node 並存在 _dfsList
+```
 
-#### ii. void simulateHelper(int idx): 
-用來生成 ```private member HashMap<SignalKey, vector<size_t>> *_simList```
+#### Helper function
 
-#### iii. void optHelper(CirGate* input):
-用來 optimize gate
+Besides, I define some helper functions, can be categorized as below:
 
-### class CirGate
-主要管理 gate 的 local 資訊及函式，包括 Gate details (ID、 line、Type)、是否 marked、連結資訊（fanin、fanout），這些共通資訊也會繼承給child class (AigGate、PoGate、PiGate、ConstGate)。
+
+##### i. DFS_helper [void genDFSList(), void addDFS(CirGate* root)]: 
+> Used to generate ```private member vector<CirGate*> _dfsList```
+- It calls `genDFSList()` in the order of PO, and recusively call `addDFS()` to connect nodes under root with `_fanin`, then traverse nodes and stores node in `_dfsList`
+
+##### ii. void simulateHelper(int idx): 
+> Used to generate ```private member HashMap<SignalKey, vector<size_t>> *_simList```
+
+##### iii. void optHelper(CirGate* input):
+> Used to optimize gates performance
+
+### 2. class `CirGate`
+> Used to manage local attributes and functions in gates, including Gate details (ID、 line、Type), marked status, connection details (fanin, fanout). Child class (AigGate, PoGate, PiGate, ConstGate) will also inherit those common attributes.
 
 ```
    //  some protected member
@@ -55,43 +59,67 @@
 
 ```
 
-i. 另外比較特別的是，用```marked```判斷是否```==```目前檢查的```cur_mark```值，避免過多的 process overload：
+##### i. Please notice that `marked()` is used to see if eqals to currently tested `cur_mark`, to prevent process overload：
 
 ```bool marked() const { return (_mark == cur_mark); }```
     
-ii. ```_signalList```用來存放每次 simulation 的測試結果，```_baseSignal```是在PI 皆為 0 時的 simulation 狀態（輸出 gate value 的時候會需要_baseSignal 來當 padding）。
+##### ii. `_signalList` is used to store the results in every simulation. 
+
+##### iii. `_baseSignal` is the simulation status when PI are all 0 (`_baseSignal` served as padding when outputing gate value).
+
+
 ## II. Algorithms of Each Parts
-### CirMgr::sweep() 
-先用 genDFSList() 跑一次 DFS，沒被 traverse 到、且不為 PI 的就需要被 removed，處理 remove 有個麻煩點是要把那個gate的所有 faninGate 的 fanoutList, fanoutGate 的 faninList 都更改，以免其他 gate 指到 removed gate 而發生 segmentation fault。
+
+### 1. CirMgr::sweep()
+
+- First using `genDFSList()` to run DFS, the node that is not traversed and also not PI need to be removed.
+- To remove the node, we also need to update the below things, in case other gates pointed to the removed gate, and occurs segmentation fault.
+  - the `fanoutList` in all its `faninGate`
+  - the `faninList` in all its `fanoutGate` 
 
 
-### CirMgr::optimize() 
-因為需要 recursively simplifying from PO，所以我又寫了一個helper function 來做 recursive，而原本的 optimize() 則用迴圈呼叫每個 PO 進入helper function CirMgr::optHelper(CirGate* input)
-我把 optimize gate 的簡化形式方為三種（a 為其中一個 fanin gate）：
-####	i.   to_zero
-####	ii.  to_a
-####	ii.  to_invert_a
-先依照上課的簡化情形歸納做 gate 關係的判斷，分別找出簡化的形式，最後再實作簡化。同時簡化可能需要 remove gate，所以也要做 remove gate 的連結處理（同 sweep() 所以省略）。
-另外我在每個 gate 中多設一個 _changed 判斷其 child node 是否做了簡化的更動，藉此來實作 recursively changed from PO。
+### 2. CirMgr::optimize()
+
+#### Helper function
+
+##### i. CirMgr::optHelper(CirGate* input)
+> Since we need to recursively simplifying from PO, I write another helper function to do the recursive. And `optimize()` iteratively call all the PO to execute helper function.
+
+- I simplify gate optimization into three forms (`a` stands as one of the fanin gate):
+
+#####	i.   to_zero
+#####	ii.  to_a
+#####	ii.  to_invert_a
 
 
+- Categorized the gate simplification as the course mentioned, and implement the simplication.
+- Meanwhile, simplify operation involves removing gate, need to handle the removed gate connection with other gates. (same as `sweep()`)
+- Besides, I add a variables `_changed` in gate to check if its child node is simplified, in order to implement recursively changing from PO.
 
 
-### CirMgr::strash()
-這個 function 要判斷 gate 的 ```fanin``` 是否完全相同（invert 順序也要一致），所以需要用到一個新的 dataType：
-```template <class HashKey, class HashData>class HashMap```
-而 class HashKey 有兩個 member element ```in0, in1```，用來存放 AIG 兩個 faninGate 的 ID
+### 3. CirMgr::strash()
 
-首先 operator overloading() 將兩個 fanin 的 gateID 生成 HashMap 的 key。透過 insert <key, gateID> 到 hashTable 裡，判斷是否有相同 key 的 gate。
+> Used to check if two AIG has the same `fanin` (also the same `invert` order)
 
-如果 key 相同代表兩個 AIG 可以合併。合併的動作也會牽涉到 remove gate，另外需要把被合併的 gate 所有的 fanoutGate 也合併到另一 gate。
+- I define a new DataType：
+
+ ```template <class HashKey, class HashData>class HashMap```
+ 
+with two member element `in0, in1` to store two faninGate ID in AIG
+
+- First, using operator `overloading()` to generate HashMap key with two fanin gate ID.
+- By inserting `<key, gateID>` to hashTable, check if there are gates with same key.
+- If the key is the same, this means that two AIG can be merged. The merge operaion involves removing gate.
+- Meanwhile, merge operation involves removing gate, need to move all the `fanoutGate` in merged gate to the other one.
 
 
-### CirMgr::randomSim() / CirMgr::fileSim()
-這兩個 function 都是 simulation，```fileSim()``` 用指定的 pattern 去歸類 gate signal，```randomSim()``` 用隨機數字來做 pattern。因演算法大致相同，僅細說 fileSim() 的實作。
+### 4. CirMgr::randomSim() / CirMgr::fileSim()
+> These two functions are both simulation. `fileSim()` uses the assigned pattern to categorize gate signal, while `randomSim()` uses random pattern.
 
-一開始先將 pattern file 指定的 PI signal分次輸入至 ```_signalList```，再利用 ```simulateHelper()``` 來做其他 gate 相對應的 ```_signalList``` 結果。之後再將所有 gate 的 ```_signalList``` 當作 key 放到 HashTable。
+Since the algorithm is mostly the same, I will illustrate the implementation of `fileSim()`.
 
-如果有兩個 gate 有一樣的 ```_signalList```，就判斷為 FECPairs，而此 HashTable 被存在 CirMgr() 的 ```HashMap<SignalKey, vector<size_t>> *_simList```，以利 gate 在輸出 FECs 時可以 access，還有輸出 ```FECPairs()``` 比較方便不用重新 simulate。
+- First, input the assigned PI signal in pattern file to `_signalList`, and use `simulateHelper()` to construct `_signalList` in other gates. And then uses `_signalList` as the key to put results into HashTable.
 
-另外存進去當 key 的 ```_signalList``` 經過處理就是 gate value。我用 string 來存 key，不會有字元限制，而用前 64 bits 轉 long long int 當作 hash 的 index。
+- If there are two gates with the same `_signalList`, we views them as FECPairs. And this HashTable is stored in `HashMap<SignalKey, vector<size_t>> *_simList` in `CirMgr()`, to make it accessible when gates outputing FECs, and don't need to re-simulate when outputing `FECPairs()`.
+
+- Please notice that the key stored in `_signalList` can be extracted as gate value. I use `string` to store keys so that there is no bit count limit, and then casts the first 64 bits to `long long int` as hash index.
