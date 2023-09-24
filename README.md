@@ -1,8 +1,11 @@
 # Functionally-Reduced-And-Inverter-Graph-Project
 
+## Summary
+This project focuses on the design and implementation of data structures and algorithms using C++ for managing digital circuits and performing various optimization and simulation operations.
+
 ## Table of contents
-* [Design of Data Structure](#Design-of-Data-Structure)
-* [Algorithms of Each Parts](#Algorithms-of-Each-Parts)
+* [Design of Data Structure](Design-of-Data-Structure)
+* [Algorithms of Each Parts](Algorithms-of-Each-Parts)
 
 
 ## I. Design of Data Structure
